@@ -7,6 +7,14 @@ Ramyoz Notes Application is a high-performance, premium note-taking workspace de
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-green)
 ![NextAuth](https://img.shields.io/badge/Auth-NextAuth.js-blue)
 
+---
+
+<img width="1864" height="892" alt="image" src="https://github.com/user-attachments/assets/f190a12b-62ad-4834-8e12-97d0212deeba" />
+
+---
+Live Working Link: https://ramyoz-notes-application-harsh.vercel.app/
+
+---
 ## ✨ Key Features
 
 - **🚀 Instant Interaction**: Powered by Optimistic UI updates. Notes appear, update, and disappear locally the millisecond you click, syncing with the cloud in the background.
@@ -24,6 +32,13 @@ Ramyoz Notes Application is a high-performance, premium note-taking workspace de
 - **Backend**: Next.js API Routes (Edge-ready)
 - **Database**: MongoDB (Direct Driver integration)
 - **Authentication**: NextAuth.js (JWT Strategy)
+
+---
+
+<img width="1885" height="894" alt="image" src="https://github.com/user-attachments/assets/78d0b13c-9a44-444b-8bdb-559114b2fd01" />
+
+---
+
 
 ## 🚦 Getting Started
 
