@@ -323,7 +323,14 @@ export default function DashboardUI({ initialNotes }: { initialNotes: any[] }) {
             <style jsx>{`
         @media (max-width: 767px) {
           :global(:root) {
-            --dashboard-hero-padding: 30px 20px;
+            --dashboard-hero-padding: 24px 16px;
+          }
+          .dashboard-hero h1 {
+            font-size: 1.75rem !important;
+          }
+          .dashboard-hero p {
+            font-size: 0.95rem !important;
+            margin-bottom: 16px !important;
           }
         }
       `}</style>
