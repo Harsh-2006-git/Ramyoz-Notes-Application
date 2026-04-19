@@ -31,7 +31,7 @@ export default function AuthForm() {
                 setError("Invalid email or password");
                 setLoading(false);
             } else {
-                router.push("/dashboard");
+                window.location.href = "/dashboard";
             }
         } else {
             try {
@@ -58,7 +58,7 @@ export default function AuthForm() {
                     setError("Registered successfully, but login failed.");
                     setLoading(false);
                 } else {
-                    router.push("/dashboard");
+                    window.location.href = "/dashboard";
                 }
             } catch (err: any) {
                 setError(err.message);
