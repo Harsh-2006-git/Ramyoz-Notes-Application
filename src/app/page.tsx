@@ -10,5 +10,5 @@ export default async function Home() {
     redirect("/dashboard");
   }
 
-  return <LandingUI />;
+  return <LandingUI googleClientId={process.env.GOOGLE_CLIENT_ID || ""} />;
 }
