@@ -38,31 +38,30 @@ export const authOptions: NextAuthOptions = {
                     const db = client.db();
                     const users = db.collection("users");
 
-                    let user = await users.findOne({ email: payload.email });
+                    let user: any = await users.findOne({ email: payload.email });
 
                     if (!user) {
-                        const result = await users.insertOne({
+                        const newUser = {
                             name: payload.name,
                             email: payload.email,
                             image: payload.picture,
                             emailVerified: new Date(),
-                        });
-                        user = {
+                        };
+                        const result = await users.insertOne(newUser);
+                        return {
                             id: result.insertedId.toString(),
                             name: payload.name,
                             email: payload.email,
                             image: payload.picture,
                         };
-                    } else {
-                        user = {
-                            id: user._id.toString(),
-                            name: user.name,
-                            email: user.email,
-                            image: user.image,
-                        };
                     }
 
-                    return user;
+                    return {
+                        id: user._id.toString(),
+                        name: user.name,
+                        email: user.email,
+                        image: user.image,
+                    };
                 } catch (error) {
                     console.error("Error verifying Google ID Token:", error);
                     return null;
