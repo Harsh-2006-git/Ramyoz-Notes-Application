@@ -54,13 +54,6 @@ export default function GoogleSignIn({ clientId }: GoogleSignInProps) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
             <div ref={buttonRef}></div>
-            <div id="g_id_onload"
-                data-client_id={clientId}
-                data-context="signin"
-                data-ux_mode="popup"
-                data-callback="handleCredentialResponse"
-                data-auto_prompt="true">
-            </div>
         </div>
     );
 }
