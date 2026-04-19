@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Ramyoz Notes Application",
-  description: "A premium, instant note-taking experience with secure Google Authentication.",
+  description: "A premium, instant note-taking experience.",
 };
 
 export default function RootLayout({
@@ -22,7 +22,6 @@ export default function RootLayout({
             {children}
           </main>
         </Providers>
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
       </body>
     </html>
   );

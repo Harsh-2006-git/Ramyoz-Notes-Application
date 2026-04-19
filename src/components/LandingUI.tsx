@@ -1,11 +1,72 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Shield, Zap, Lock, Globe, MessageSquare } from "lucide-react";
-import GoogleSignIn from "./GoogleSignIn";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, Lock, Zap, Shield, Mail, Key, User } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function LandingUI({ googleClientId }: { googleClientId: string }) {
+export default function LandingUI() {
+    const router = useRouter();
+    const [isLogin, setIsLogin] = useState(true);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        if (isLogin) {
+            const res = await signIn("credentials", {
+                redirect: false,
+                email,
+                password,
+            });
+
+            if (res?.error) {
+                setError("Invalid email or password");
+                setLoading(false);
+            } else {
+                router.push("/dashboard");
+            }
+        } else {
+            try {
+                const res = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password }),
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.message || "Registration failed");
+                }
+
+                // Auto login after registration
+                const loginRes = await signIn("credentials", {
+                    redirect: false,
+                    email,
+                    password,
+                });
+
+                if (loginRes?.error) {
+                    setError("Registered successfully, but login failed.");
+                    setLoading(false);
+                } else {
+                    router.push("/dashboard");
+                }
+            } catch (err: any) {
+                setError(err.message);
+                setLoading(false);
+            }
+        }
+    };
+
     return (
         <div style={{ minHeight: '90vh', overflow: 'hidden' }}>
             {/* Hero Section */}
@@ -61,7 +122,7 @@ export default function LandingUI({ googleClientId }: { googleClientId: string }
                     <p className="hero-desc" style={{
                         color: 'var(--muted)',
                         maxWidth: 'var(--desc-width, 800px)',
-                        margin: '0 auto 50px auto',
+                        margin: '0 auto 40px auto',
                         lineHeight: '1.4',
                         fontWeight: '400'
                     }}>
@@ -69,19 +130,109 @@ export default function LandingUI({ googleClientId }: { googleClientId: string }
                         Secure, instant, and refined for the modern age.
                     </p>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center', justifyContent: 'center' }}>
-                        <GoogleSignIn clientId={googleClientId} />
-                        
-                        <button
-                            className="btn-secondary"
-                            style={{
-                                fontSize: 'var(--btn-font, 1.1rem)',
-                                padding: 'var(--btn-padding, 18px 40px)',
-                                borderRadius: '16px'
-                            }}
-                        >
-                            Explore Tech
-                        </button>
+                    {/* Auth Form Container */}
+                    <div className="auth-container" style={{
+                        maxWidth: '400px',
+                        margin: '0 auto',
+                        background: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '24px',
+                        padding: '32px',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)'
+                    }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '24px', color: 'white' }}>
+                            {isLogin ? 'Welcome Back' : 'Create an Account'}
+                        </h2>
+
+                        {error && (
+                            <div style={{ color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.9rem' }}>
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <AnimatePresence>
+                                {!isLogin && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}
+                                    >
+                                        <label style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Full Name</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px' }}>
+                                            <User size={18} style={{ color: 'var(--muted)', marginRight: '12px' }} />
+                                            <input 
+                                                type="text" 
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                placeholder="John Doe"
+                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
+                                                required={!isLogin}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                                <label style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Email Address</label>
+                                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px' }}>
+                                    <Mail size={18} style={{ color: 'var(--muted)', marginRight: '12px' }} />
+                                    <input 
+                                        type="email" 
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="you@example.com"
+                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                                <label style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Password</label>
+                                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px' }}>
+                                    <Key size={18} style={{ color: 'var(--muted)', marginRight: '12px' }} />
+                                    <input 
+                                        type="password" 
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
+                                        required
+                                        minLength={6}
+                                    />
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="btn-primary"
+                                style={{
+                                    fontSize: '1rem',
+                                    padding: '16px',
+                                    borderRadius: '12px',
+                                    marginTop: '8px',
+                                    opacity: loading ? 0.7 : 1,
+                                    cursor: loading ? 'not-allowed' : 'pointer'
+                                }}
+                            >
+                                {loading ? "Processing..." : (isLogin ? "Sign In" : "Create Account")}
+                            </button>
+                        </form>
+
+                        <div style={{ marginTop: '24px', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            <button 
+                                onClick={() => { setIsLogin(!isLogin); setError(""); }}
+                                style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                {isLogin ? "Sign Up" : "Log In"}
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -101,7 +252,8 @@ export default function LandingUI({ googleClientId }: { googleClientId: string }
             {/* Features Grid */}
             <section className="features-section" style={{
                 maxWidth: '1400px',
-                margin: '0 auto'
+                margin: '0 auto',
+                paddingTop: '60px'
             }}>
                 <div style={{
                     display: 'grid',
@@ -154,7 +306,7 @@ export default function LandingUI({ googleClientId }: { googleClientId: string }
 
             <style jsx>{`
         .hero-section {
-          padding: 100px 20px;
+          padding: 80px 20px;
         }
         .hero-title {
           font-size: 5rem;
@@ -170,10 +322,11 @@ export default function LandingUI({ googleClientId }: { googleClientId: string }
           .hero-desc { font-size: 1.25rem; }
         }
         @media (max-width: 767px) {
-          .hero-section { padding: 60px 16px; }
-          .hero-title { font-size: 2.75rem; letter-spacing: -2px; }
+          .hero-section { padding: 40px 16px; }
+          .hero-title { font-size: 2.75rem; letter-spacing: -2px; border-bottom: 24px; }
           .hero-desc { font-size: 1.05rem; }
           .features-section { padding: 40px 16px; }
+          .auth-container { padding: 24px !important; width: 100%; border-radius: 20px !important; }
           :global(:root) {
             --btn-font: 0.95rem;
             --btn-padding: 14px 28px;
