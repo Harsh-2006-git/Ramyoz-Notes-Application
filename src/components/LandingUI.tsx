@@ -1,88 +1,47 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Lock, Zap, Shield, Mail, Key, User } from "lucide-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Sparkles, Lock, Zap, Shield, ArrowRight } from "lucide-react";
+import AuthForm from "./AuthForm";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function LandingUI() {
-    const router = useRouter();
-    const [isLogin, setIsLogin] = useState(true);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [isMobile, setIsMobile] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
-
-        if (isLogin) {
-            const res = await signIn("credentials", {
-                redirect: false,
-                email,
-                password,
-            });
-
-            if (res?.error) {
-                setError("Invalid email or password");
-                setLoading(false);
-            } else {
-                router.push("/dashboard");
-            }
-        } else {
-            try {
-                const res = await fetch("/api/auth/register", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, email, password }),
-                });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.message || "Registration failed");
-                }
-
-                // Auto login after registration
-                const loginRes = await signIn("credentials", {
-                    redirect: false,
-                    email,
-                    password,
-                });
-
-                if (loginRes?.error) {
-                    setError("Registered successfully, but login failed.");
-                    setLoading(false);
-                } else {
-                    router.push("/dashboard");
-                }
-            } catch (err: any) {
-                setError(err.message);
-                setLoading(false);
-            }
-        }
-    };
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024);
+        };
+        
+        // Initial check
+        checkMobile();
+        
+        // Listen for resize
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     return (
         <div style={{ minHeight: '90vh', overflow: 'hidden' }}>
             {/* Hero Section */}
             <section className="hero-section" style={{
-                display: 'flex',
-                flexDirection: 'column',
+                maxWidth: '1400px',
+                margin: '0 auto',
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                gap: isMobile ? '40px' : '80px',
                 alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
                 position: 'relative',
-                transition: 'all 0.3s ease'
+                paddingTop: isMobile ? '60px' : '120px',
+                paddingBottom: '80px'
             }}>
+                {/* Left Column: Hero Text */}
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8 }}
+                    style={{ textAlign: isMobile ? 'center' : 'left' }}
                 >
                     <div style={{
                         display: 'inline-flex',
@@ -105,10 +64,11 @@ export default function LandingUI() {
 
                     <h1 className="hero-title" style={{
                         fontWeight: '1000',
-                        lineHeight: '0.9',
+                        lineHeight: '1',
                         marginBottom: '28px',
-                        letterSpacing: '-4px',
-                        color: 'white'
+                        letterSpacing: '-2px',
+                        color: 'white',
+                        fontSize: isMobile ? '3.5rem' : '5.5rem'
                     }}>
                         Ramyoz <br />
                         <span style={{
@@ -116,135 +76,65 @@ export default function LandingUI() {
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             display: 'inline-block'
-                        }}>Notes Application.</span>
+                        }}>Notes.</span>
                     </h1>
 
                     <p className="hero-desc" style={{
                         color: 'var(--muted)',
-                        maxWidth: 'var(--desc-width, 800px)',
-                        margin: '0 auto 40px auto',
-                        lineHeight: '1.4',
+                        maxWidth: 'var(--desc-width, 600px)',
+                        margin: isMobile ? '0 auto 40px auto' : '0 0 40px 0',
+                        lineHeight: '1.6',
+                        fontSize: '1.25rem',
                         fontWeight: '400'
                     }}>
                         A high-performance workspace designed for your most valuable thoughts.
                         Secure, instant, and refined for the modern age.
                     </p>
 
-                    {/* Auth Form Container */}
-                    <div className="auth-container" style={{
-                        maxWidth: '400px',
-                        margin: '0 auto',
-                        background: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '24px',
-                        padding: '32px',
-                        backdropFilter: 'blur(10px)',
-                        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)'
-                    }}>
-                        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '24px', color: 'white' }}>
-                            {isLogin ? 'Welcome Back' : 'Create an Account'}
-                        </h2>
-
-                        {error && (
-                            <div style={{ color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '10px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.9rem' }}>
-                                {error}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            <AnimatePresence>
-                                {!isLogin && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}
-                                    >
-                                        <label style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Full Name</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px' }}>
-                                            <User size={18} style={{ color: 'var(--muted)', marginRight: '12px' }} />
-                                            <input 
-                                                type="text" 
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                placeholder="John Doe"
-                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
-                                                required={!isLogin}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Email Address</label>
-                                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px' }}>
-                                    <Mail size={18} style={{ color: 'var(--muted)', marginRight: '12px' }} />
-                                    <input 
-                                        type="email" 
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="you@example.com"
-                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
-                                <label style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>Password</label>
-                                <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px 16px' }}>
-                                    <Key size={18} style={{ color: 'var(--muted)', marginRight: '12px' }} />
-                                    <input 
-                                        type="password" 
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="••••••••"
-                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none' }}
-                                        required
-                                        minLength={6}
-                                    />
-                                </div>
-                            </div>
-
+                    {isMobile && (
+                        <Link href="/auth" style={{ textDecoration: 'none' }}>
                             <button
-                                type="submit"
-                                disabled={loading}
                                 className="btn-primary"
                                 style={{
-                                    fontSize: '1rem',
-                                    padding: '16px',
-                                    borderRadius: '12px',
-                                    marginTop: '8px',
-                                    opacity: loading ? 0.7 : 1,
-                                    cursor: loading ? 'not-allowed' : 'pointer'
+                                    fontSize: '1.1rem',
+                                    fontWeight: 'bold',
+                                    padding: '18px 40px',
+                                    borderRadius: '16px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 12px 35px rgba(139, 92, 246, 0.4)'
                                 }}
                             >
-                                {loading ? "Processing..." : (isLogin ? "Sign In" : "Create Account")}
+                                Get Started <ArrowRight size={20} />
                             </button>
-                        </form>
-
-                        <div style={{ marginTop: '24px', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                            {isLogin ? "Don't have an account? " : "Already have an account? "}
-                            <button 
-                                onClick={() => { setIsLogin(!isLogin); setError(""); }}
-                                style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
-                            >
-                                {isLogin ? "Sign Up" : "Log In"}
-                            </button>
-                        </div>
-                    </div>
+                        </Link>
+                    )}
                 </motion.div>
+
+                {/* Right Column: Auth Form (Desktop Only) */}
+                {!isMobile && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
+                    >
+                        <div style={{ width: '100%', maxWidth: '450px' }}>
+                            <AuthForm />
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Floating background blur elements */}
                 <div style={{
                     position: 'absolute',
                     top: '20%',
                     left: '5%',
-                    width: '400px',
-                    height: '400px',
+                    width: '500px',
+                    height: '500px',
                     background: 'rgba(139, 92, 246, 0.1)',
-                    filter: 'blur(100px)',
+                    filter: 'blur(120px)',
                     zIndex: -1
                 }}></div>
             </section>
@@ -306,30 +196,22 @@ export default function LandingUI() {
 
             <style jsx>{`
         .hero-section {
-          padding: 80px 20px;
-        }
-        .hero-title {
-          font-size: 5rem;
-        }
-        .hero-desc {
-          font-size: 1.5rem;
+          padding: 0 20px;
         }
         .features-section {
           padding: 60px 20px;
         }
         @media (max-width: 1200px) {
-          .hero-title { font-size: 4rem; }
-          .hero-desc { font-size: 1.25rem; }
+          .hero-title { font-size: 4.5rem !important; }
+        }
+        @media (max-width: 1024px) {
+          .hero-title { font-size: 3.5rem !important; }
         }
         @media (max-width: 767px) {
-          .hero-section { padding: 40px 16px; }
-          .hero-title { font-size: 2.75rem; letter-spacing: -2px; border-bottom: 24px; }
+          .hero-title { font-size: 3rem !important; letter-spacing: -2px; }
           .hero-desc { font-size: 1.05rem; }
           .features-section { padding: 40px 16px; }
-          .auth-container { padding: 24px !important; width: 100%; border-radius: 20px !important; }
           :global(:root) {
-            --btn-font: 0.95rem;
-            --btn-padding: 14px 28px;
             --tag-font: 0.8rem;
             --desc-width: 100%;
             --feature-padding: 32px;

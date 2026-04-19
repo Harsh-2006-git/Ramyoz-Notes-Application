@@ -36,7 +36,7 @@ export async function POST(req: Request) {
             name: name || email.split("@")[0],
             email,
             password: hashedPassword,
-            image: "https://ui-avatars.com/api/?name=" + (name || email) + "&background=random",
+            image: "https://ui-avatars.com/api/?name=" + encodeURIComponent(name || email) + "&background=random",
             createdAt: new Date(),
             updatedAt: new Date(),
         };
